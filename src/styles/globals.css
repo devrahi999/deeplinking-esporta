@@ -117,47 +117,15 @@ a:hover {
   gap: 1.25rem;
 }
 
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
+/*
+ * The Esporta wordmark. Sized by height with `width: auto`, and the intrinsic
+ * width/height attributes on the element reserve the right box before the image
+ * arrives, so the card below it does not jump.
+ */
+.brand-logo {
+  height: 2rem;
+  width: auto;
   align-self: center;
-  color: var(--text);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  font-size: 1.05rem;
-}
-
-.brand:hover {
-  text-decoration: none;
-}
-
-.brand-mark {
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 8px;
-  background: var(--green);
-  color: var(--on-accent);
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.footer {
-  width: 100%;
-  max-width: var(--maxw);
-  margin-top: auto;
-  padding-top: 1.5rem;
-  color: var(--text-tertiary);
-  font-size: 0.8125rem;
-  text-align: center;
-}
-
-.footer a {
-  color: var(--text-tertiary);
-  text-decoration: underline;
 }
 
 /* ---------- card ---------- */
@@ -399,50 +367,4 @@ a:hover {
   color: var(--text-tertiary);
   font-weight: 600;
   cursor: default;
-}
-
-/* ---------- landing ---------- */
-
-.hero {
-  text-align: center;
-  padding: 1rem 0 0.25rem;
-}
-
-.hero h1 {
-  margin: 0 0 0.625rem;
-  font-size: 1.875rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-}
-
-.hero p {
-  margin: 0 auto;
-  max-width: 28rem;
-  color: var(--text-tertiary);
-}
-
-.linkgrid {
-  display: grid;
-  gap: 0.5rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.linkgrid li {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  padding: 0.6rem 0.875rem;
-  background: var(--surface-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-size: 0.875rem;
-}
-
-.linkgrid code {
-  color: var(--green);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.8125rem;
 }

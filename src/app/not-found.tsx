@@ -18,6 +18,11 @@ import { SiteFrame } from '@/components/site-frame';
  * answers the same 404 for private as for nonexistent, and this page keeps that
  * promise: confirming that a hidden post exists would leak exactly what its
  * author chose not to share.
+ *
+ * It is also what `/` renders. This host has no landing page — there is no
+ * `app/page.tsx` — because `app.esporta.site` exists to serve deep links, and a
+ * bare origin is not one. Everything except the four link routes and
+ * `/.well-known/` is a 404 here.
  */
 export const metadata: Metadata = {
   title: 'Link not found — Esporta',

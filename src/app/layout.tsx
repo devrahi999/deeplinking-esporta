@@ -11,17 +11,22 @@ import '@/styles/globals.css';
  * The title template is `%s` — pages here compose their own complete titles
  * ("Rahi (@rahi) on Esporta"), because a link preview card shows the title alone
  * and a trailing " | Esporta" would eat the part that matters on a narrow screen.
+ *
+ * The `default` title is only ever used if a route forgets to set one: this host
+ * has **no landing page**, so `/` itself is a 404 handled by `not-found.tsx`.
  */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Esporta — the esports marketplace',
+    default: 'Esporta',
     template: '%s',
   },
-  description:
-    'Esporta is where players, teams, organisers and creators find each other. Open Esporta links on your phone to see them in the app.',
+  description: 'Open Esporta links on your phone to see them in the app.',
   applicationName: 'Esporta',
   openGraph: { siteName: 'Esporta', type: 'website' },
+  // Served from public/favicon.ico. Declared rather than left to the browser's
+  // root-path convention so the tag is in the HTML a scraper reads.
+  icons: { icon: '/favicon.ico', shortcut: '/favicon.ico', apple: '/favicon.ico' },
 };
 
 export const viewport: Viewport = {

@@ -18,14 +18,16 @@ when it was first written — it only moved into `public/`.
 
 ```
 esporta-deeplinking/
-├── public/.well-known/
-│   ├── assetlinks.json                 # Android App Links (Digital Asset Links)
-│   └── apple-app-site-association      # iOS Universal Links (NO .json extension)
+├── public/
+│   ├── .well-known/
+│   │   ├── assetlinks.json             # Android App Links (Digital Asset Links)
+│   │   └── apple-app-site-association  # iOS Universal Links (NO .json extension)
+│   ├── esporta_text_logo.png           # the wordmark shown on every page
+│   └── favicon.ico
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx                  # metadataBase, palette, viewport
-│   │   ├── page.tsx                    # landing ("Esporta links open in the app")
-│   │   ├── not-found.tsx               # the real 404 for dead links
+│   │   ├── layout.tsx                  # metadataBase, favicon, palette, viewport
+│   │   ├── not-found.tsx               # the real 404 — dead links AND `/`
 │   │   ├── robots.ts
 │   │   ├── p/[id]/page.tsx             # post
 │   │   ├── s/[id]/page.tsx             # short
@@ -36,7 +38,7 @@ esporta-deeplinking/
 │   │   ├── post-preview.tsx
 │   │   ├── profile-preview.tsx
 │   │   ├── get-app.tsx                 # the "Get Esporta" CTA
-│   │   └── site-frame.tsx              # chrome, avatar, verified tick
+│   │   └── site-frame.tsx              # wordmark, avatar, verified tick
 │   ├── lib/  (config, links, preview, format)
 │   └── styles/globals.css              # the Esporta palette
 ├── scripts/check-site.py               # black-box check of a deployment
@@ -44,6 +46,11 @@ esporta-deeplinking/
 ├── next.config.ts  package.json  tsconfig.json  .env.example
 └── DEEPLINK_EXTERNAL_SETUP.md
 ```
+
+**There is deliberately no `app/page.tsx`.** `app.esporta.site` exists to serve
+deep links, and a bare origin is not one — so `/` is a 404, rendered by
+`not-found.tsx`. Everything except the four link routes, `/.well-known/`,
+`/robots.txt` and the two `public/` assets is a 404 on this host.
 
 Plus one change outside this folder: **`esporta-backend/src/public/`** — the
 unauthenticated preview endpoint the fallback pages read. See §7.
@@ -60,7 +67,7 @@ unauthenticated preview endpoint the fallback pages read. See §7.
 | `https://app.esporta.site/s/<shortId>` | short |
 | `https://app.esporta.site/pp/<personalProfileId>` | personal profile |
 | `https://app.esporta.site/op/<otherProfileId>` | team, organiser, news page |
-| `https://app.esporta.site/` | landing + install CTA |
+| `https://app.esporta.site/` | **404** — no landing page, on purpose |
 
 Non-negotiables:
 
@@ -108,6 +115,12 @@ Google Play; iOS shows an inert "coming soon" chip until a listing exists.
 
 No user agent is inspected anywhere — sniffing would make every response
 uncacheable to save a visitor one glance, so both platforms are always offered.
+
+**Page chrome is the Esporta wordmark and nothing else.** `public/esporta_text_logo.png`
+sits above the card; there is no text lockup, no footer and no link to the origin,
+because the origin is a 404. The favicon is `public/favicon.ico`, declared in
+`layout.tsx` metadata rather than left to the browser's root-path convention.
+Both are copies of the assets already used by `core-admin` and the Flutter app.
 
 ---
 
@@ -359,8 +372,9 @@ and that all four routes exist:
 bash verify.sh
 ```
 
-**Against a deployment** — status codes, content types, 404 behaviour, and (with
-real ids) that previews actually render with OG tags:
+**Against a deployment** — association files, brand assets, that `/` is a 404,
+that dead links 404, and (with real ids) that previews actually render with OG
+tags:
 
 ```bash
 python3 scripts/check-site.py https://app.esporta.site

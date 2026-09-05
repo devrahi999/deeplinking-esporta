@@ -1,26 +1,28 @@
 import type { ReactNode } from 'react';
-import { SITE_URL } from '@/lib/config';
 
 /**
- * The page chrome every route shares: the mark, the content column, the footer.
+ * The page chrome every route shares: the wordmark, then the content column.
  *
  * Intentionally plain. This site is a waiting room — somebody tapped an Esporta
  * link on a device without the app, and the only two things they need are "what
  * was I sent" and "how do I get the app". Anything else competes with those.
+ *
+ * **The wordmark is not a link, and there is no footer.** `/` is deliberately a
+ * 404 on this host (there is no `app/page.tsx`), so anything pointing at the
+ * origin would send a visitor to the not-found page.
  */
 export function SiteFrame({ children }: { children: ReactNode }) {
   return (
     <div className="page">
-      <a className="brand" href={SITE_URL} aria-label="Esporta home">
-        <span className="brand-mark" aria-hidden="true">
-          E
-        </span>
-        Esporta
-      </a>
+      {/* Plain <img>, and no next/image — see the note in next.config.ts. */}
+      <img
+        className="brand-logo"
+        src="/esporta_text_logo.png"
+        alt="Esporta"
+        width={3264}
+        height={790}
+      />
       <main className="shell">{children}</main>
-      <footer className="footer">
-        Esporta — the esports marketplace. <a href={SITE_URL}>app.esporta.site</a>
-      </footer>
     </div>
   );
 }

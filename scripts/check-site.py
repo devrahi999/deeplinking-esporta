@@ -4,8 +4,9 @@
     python3 scripts/check-site.py                          # https://app.esporta.site
     python3 scripts/check-site.py http://127.0.0.1:3200    # a local `next start`
 
-Works with no configuration: it verifies the association files, the landing page,
-and that every link route answers a real 404 for an id nothing can resolve.
+Works with no configuration: it verifies the association files, the brand assets,
+that `/` is a 404 (this host has no landing page), and that every link route
+answers a real 404 for an id nothing can resolve.
 
 Supply real ids to also check that live previews render, which is the part that
 cannot be faked — set any of these in the environment:
@@ -26,16 +27,20 @@ DEAD_ID = "00000000-0000-0000-0000-000000000000"
 GREEN, RED, YELLOW, RESET = "\033[32m", "\033[31m", "\033[33m", "\033[0m"
 
 failures = 0
+todos = 0
 skipped = 0
 
 
-def request(base, path):
-    """(status, headers, body) for one GET. Redirects are NOT followed."""
-    out = subprocess.run(
-        ["curl", "-sS", "-m", "30", "-D", "-", f"{base}{path}"],
-        capture_output=True,
-        text=True,
-    ).stdout
+def request(base, path, want_body=True):
+    """(status, headers, body) for one GET. Redirects are NOT followed.
+
+    `want_body=False` discards the body before it is read, which is required for
+    binary assets — the response is decoded as text and a PNG is not valid UTF-8.
+    """
+    argv = ["curl", "-sS", "-m", "30", "-D", "-"]
+    if not want_body:
+        argv += ["-o", "/dev/null"]
+    out = subprocess.run(argv + [f"{base}{path}"], capture_output=True, text=True).stdout
     # curl writes headers then a blank line; text mode may normalise CRLF.
     parts = re.split(r"\r?\n\r?\n", out, maxsplit=1)
     head, body = parts[0], (parts[1] if len(parts) > 1 else "")
@@ -75,6 +80,14 @@ def report(label, problems, detail=""):
         print(f"  {GREEN}PASS{RESET}  {label}{('  ' + detail) if detail else ''}")
 
 
+def todo(label, message):
+    """Expected before publishing, a blocker at publish time — not a defect."""
+    global todos
+    todos += 1
+    print(f"  {YELLOW}TODO{RESET}  {label}")
+    print(f"        {message}")
+
+
 def skip(label, why):
     global skipped
     skipped += 1
@@ -103,9 +116,9 @@ def check_association_files(base):
                 json.loads(body)
             except Exception as exc:
                 problems.append(f"body is not valid JSON: {exc}")
-        if "<REPLACE_WITH_REAL" in body:
-            problems.append("published file still contains a placeholder")
         report(path, problems, f"{content_type}")
+        if "<REPLACE_WITH_REAL" in body:
+            todo(path, "still contains a placeholder — see DEEPLINK_EXTERNAL_SETUP.md §5/§6")
 
 
 def check_dead_links(base):
@@ -128,11 +141,28 @@ def check_dead_links(base):
     )
 
 
-def check_landing(base):
-    print("\n=== landing + robots ===")
-    for path in ("/", "/robots.txt"):
-        status, _, _ = request(base, path)
-        report(path, [] if status == 200 else [f"HTTP {status}, want 200"], "200")
+def check_root(base):
+    print("\n=== root is intentionally a 404, robots is not ===")
+    # There is no app/page.tsx: app.esporta.site serves deep links, and a bare
+    # origin is not one. A 200 here means a landing page came back from somewhere.
+    status, _, _ = request(base, "/")
+    report("/", [] if status == 404 else [f"HTTP {status}, want 404 (no landing page)"], "404")
+    status, _, _ = request(base, "/robots.txt")
+    report("/robots.txt", [] if status == 200 else [f"HTTP {status}, want 200"], "200")
+
+
+def check_assets(base):
+    print("\n=== brand assets from public/ ===")
+    for path, kind in (("/esporta_text_logo.png", "image/"), ("/favicon.ico", None)):
+        # Binary: headers only, or the text decode blows up on the first PNG byte.
+        status, headers, _ = request(base, path, want_body=False)
+        content_type = headers.get("content-type", "")
+        problems = []
+        if status != 200:
+            problems.append(f"HTTP {status}, want 200 — public/ did not reach the deployment")
+        if kind and not content_type.startswith(kind):
+            problems.append(f"Content-Type is {content_type or 'unset'!r}, want {kind}*")
+        report(path, problems, content_type)
 
 
 def check_preview(base, segment, resource_id, env_name, expect_type, expect_segment=None):
@@ -174,7 +204,8 @@ def main():
 
     check_association_files(base)
     check_dead_links(base)
-    check_landing(base)
+    check_root(base)
+    check_assets(base)
 
     print("\n=== live previews ===")
     check_preview(base, "p", os.environ.get("ESPORTA_POST_ID", ""), "ESPORTA_POST_ID", "article")
@@ -197,6 +228,9 @@ def main():
     print()
     if failures:
         print(f"{failures} check(s) FAILED.")
+        return 1
+    if todos:
+        print(f"Everything works. {todos} placeholder(s) still to fill in before publishing.")
         return 1
     print("All checks passed." + (f" {skipped} skipped." if skipped else ""))
     return 0
