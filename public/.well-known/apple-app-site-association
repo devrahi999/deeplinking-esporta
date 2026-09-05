@@ -1,0 +1,25 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "<REPLACE_WITH_REAL_APPLE_TEAM_ID>.com.esporta.esporta"
+        ],
+        "components": [
+          {
+            "/": "/p/*"
+          },
+          {
+            "/": "/s/*"
+          },
+          {
+            "/": "/pp/*"
+          },
+          {
+            "/": "/op/*"
+          }
+        ]
+      }
+    ]
+  }
+}

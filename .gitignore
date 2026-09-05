@@ -1,0 +1,19 @@
+# dependencies
+/node_modules
+
+# next build output
+/.next
+/out
+next-env.d.ts
+
+# local env — never commit a real one
+.env
+.env.local
+.env*.local
+!.env.example
+
+# verify.sh scratch
+.probe.*
+
+# typescript
+*.tsbuildinfo
